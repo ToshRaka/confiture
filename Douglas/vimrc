@@ -1,0 +1,210 @@
+set nocompatible
+
+let mapleader=","
+let maplocalleader=","
+
+set mouse=a
+
+set timeoutlen=1000
+
+" Remap some keys to Esc
+nnoremap ² <Esc>
+inoremap ² <Esc>
+vnoremap ² <Esc>
+
+inoremap kj <Esc>
+inoremap df <Esc>
+
+" General options
+set encoding=utf-8
+set fileencoding=utf-8
+set backspace=2 " make backspace work like most other apps
+set history=100
+
+" Map anonymous clipboard to X register
+set clipboard=unnamedplus
+
+" Allow left and right arrows to cross lines
+set whichwrap=b,s,<,>,[,]
+
+" Completion on vim commands
+set wildmode=list,full
+set wildmenu
+
+" Pathogen
+runtime bundle/vim-pathogen/autoload/pathogen.vim
+execute pathogen#infect()
+
+" Plugin
+filetype plugin on
+
+" Plugins built-in
+runtime ftplugin/man.vim
+runtime macros/matchit.vim
+
+
+" Colorscheme and general display options
+syntax on
+colorscheme evening
+let g:solarized_contrast="high" " default value is normal
+set background=dark
+set showcmd " Show size of visual selection
+set cursorline
+set number
+
+" Indentation
+filetype plugin indent on
+set tabstop=4
+set shiftwidth=4 " Since 7.4, sw=0 sets sw to ts, but older plugins are not aware of this
+set softtabstop=4
+set autoindent
+" Add TAB and SHIFT-TAB for indent and dedent mappings
+nnoremap <Tab> >>_
+nnoremap <S-Tab> <<_
+inoremap <S-Tab> <C-D>
+vnoremap <Tab> >gv
+vnoremap <S-Tab> <gv
+
+" Remap block motion
+nnoremap { [{
+nnoremap } ]}
+" Remap parenthesis motion
+nnoremap ( [(
+nnoremap ) ])
+
+" File type options
+
+" ARM Assembly
+autocmd BufNewFile,BufRead *.s,*.S set filetype=arm
+
+" Indentation C-style
+autocmd FileType c,cpp,java,javascript,perl,yacc :setl cindent |
+			\ :inoremap {<CR> {<CR>}<Esc><Up>o <BS>
+"  <BS> let you keep the indentatoin even after <Esc>
+" } (fix highlight)
+
+autocmd FileType php,arm,asm,c,cpp,java,javascript,perl,prolog,python,sh,verilog,vim,yacc
+			\ autocmd BufWritePre <buffer> %s/\s\+$//e
+
+autocmd FileType php,arm,asm,c,cpp,java,javascript,perl,prolog,python,sh,verilog,vim,yacc
+			\ :setl colorcolumn=80 number tabstop=4 expandtab shiftwidth=4 softtabstop=8
+
+"autocmd FileType arm,asm,c,cpp
+			\ :setl colorcolumn=80 number tabstop=8 softtabstop=8 shiftwidth=8 noexpandtab
+
+" Git commit message configuration
+autocmd FileType gitcommit set tw=72
+
+" Don't search in included modules (too slow)
+autocmd FileType perl :setl complete-=i
+autocmd FileType tex :setl spell spelllang=fr number tabstop=8 expandtab shiftwidth=4 softtabstop=4
+
+" Spellcheck
+nnoremap <silent> <F7> ]sz=
+inoremap <silent> <F7> <Esc>]sz=
+
+" Configure built-in syntax files
+" Enable Doxygen for supported langages
+let g:load_doxygen_syntax=1
+
+" Highlight bash readline extensions
+let g:readline_has_bash=1
+
+" No indentation private/protected/public, namespace, return type,
+" align parenthesis
+set cinoptions=g0,N-s,t0,(0
+
+
+" Ex mode completion
+set wildmode=longest,list,full
+
+" Highlight search result
+set hlsearch
+" Search incrementally
+set incsearch
+" Search case insensitive when only lower case, case sensisitive if uppercase
+set smartcase
+set ignorecase
+
+" Press Space to turn off highlighting and clear any message already displayed.
+:nnoremap <silent> <Space> :nohlsearch<Bar>:echo<CR>
+
+" Search for selected text, forwards or backwards.
+" http://vim.wikia.com/wiki/Search_for_visually_selected_text
+vnoremap <silent> * :<C-U>
+  \let old_reg=getreg('"')<Bar>let old_regtype=getregtype('"')<CR>
+  \gvy/<C-R><C-R>=substitute(
+  \escape(@", '/\.*$^~['), '\_s\+', '\\_s\\+', 'g')<CR><CR>
+  \gV:call setreg('"', old_reg, old_regtype)<CR>
+vnoremap <silent> # :<C-U>
+  \let old_reg=getreg('"')<Bar>let old_regtype=getregtype('"')<CR>
+  \gvy?<C-R><C-R>=substitute(
+  \escape(@", '?\.*$^~['), '\_s\+', '\\_s\\+', 'g')<CR><CR>
+  \gV:call setreg('"', old_reg, old_regtype)<CR>
+
+" Completion
+set omnifunc=syntaxcomplete#Complete
+set completeopt+=menuone,longest,preview
+" Map <CR>, <C-j> and <C-k> to cycle through autocompletion menu and
+" select the highlited proposition
+inoremap <expr> <CR> pumvisible() ? "\<C-y>" : "\<CR>"
+inoremap <expr> <C-j> pumvisible() ? "\<C-n>" : "\<C-j>"
+inoremap <expr> <C-k> pumvisible() ? "\<C-p>" : "\<C-k>"
+
+" AutoComplPop
+" Allow AutoComplPop to use ClangComplete completefunc instead of the generic omnifunc
+" This makes typing lag so not sure if it is a good idea to invoke a compiler
+" for every single character
+"let g:acp_behaviorUserDefinedFunction="ClangComplete"
+"function UserDefinedMeets(context)
+"    return 1
+"endfunction
+"let g:acp_behaviorUserDefinedMeets="UserDefinedMeets"
+
+" vim-clang
+let g:clang_auto=1 " 1 to enable complete popup after . -> and others
+let g:clang_check_syntax_auto=0 " Check syntax when file is closed
+" let g:clang_diagsopt = '' " Hide diagnostic window
+let g:clang_c_options='-std=gnu11'
+let g:clang_cpp_options='-std=c++11 -stdlib=libc++'
+
+" vim-latex
+let g:tex_flavor='latex'
+
+" airline
+set laststatus=2
+let g:airline#extensions#tabline#enabled=1
+let g:airline_theme="sol"
+
+" NERDTree
+nnoremap <silent> <F3> :NERDTreeToggle<CR>
+imap <silent> <F3> <C-o><F3>
+let NERDTreeShowBookmarks=1
+let g:NERDTreeDirArrows=0 " To avoid problems with console fonts without arrows
+
+" NERDCommenter
+let g:NERDSpaceDelims=1
+let g:NERDCustomDelimiters={ 'c': { 'left': '//', 'leftAlt': '/*', 'rightAlt': '*/' } }
+imap <silent> <C-d> <C-o><Leader>c<Space>
+vmap <silent> <C-d> <Leader>c<Space>gv
+" nmap <silent> <C-d> <Leader>c<Space>
+
+" Tagbar
+nnoremap <silent> <F2> :TagbarToggle<CR>
+imap <silent> <F2> <C-o><F2>a
+
+" Fugitive
+nnoremap <Leader>gs :Gstatus<CR>
+nnoremap <Leader>gd :Gdiff<CR>
+
+" Align
+call Align#AlignCtrl('l') " Left justified alignment
+
+" vim-easymotion
+let g:EasyMotion_do_mapping=0 " Disable default mappings
+" Turn on case insensitive feature
+let g:EasyMotion_smartcase=1
+nmap <Leader>s <Plug>(easymotion-overwin-f)
+imap <C-j> <C-o><Plug>(easymotion-j)
+imap <C-k> <C-o><Plug>(easymotion-k)
+

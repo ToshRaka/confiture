@@ -1,0 +1,555 @@
+# /etc/zsh/zshrc: system-wide .zshrc file for zsh(1).
+#
+# This file is sourced only for interactive shells. It
+# should contain commands to set up aliases, functions,
+# options, key bindings, etc.
+#
+# Global Order: zshenv, zprofile, zshrc, zlogin
+
+#   _________  _   _ ____   ____
+#  |__  / ___|| | | |  _ \ / ___|
+#    / /\___ \| |_| | |_) | |
+# _ / /_ ___) |  _  |  _ <| |___
+#(_)____|____/|_| |_|_| \_\\____|
+#
+
+# Oh My Zsh
+
+    # Path to your oh-my-zsh configuration.
+    ZSH=$HOME/.oh-my-zsh
+
+    # Set name of the theme to load.
+    # Look in ~/.oh-my-zsh/themes/
+    # Optionally, if you set this to "random", it'll load a random theme each
+    # time that oh-my-zsh is loaded.
+    # ZSH_THEME="jreese"
+
+    # Set to this to use case-sensitive completion
+    # CASE_SENSITIVE="true"
+
+    # Comment this out to disable weekly auto-update checks
+    DISABLE_AUTO_UPDATE="true"
+
+    # Uncomment following line if you want to disable colors in ls
+    # DISABLE_LS_COLORS="true"
+
+    # Uncomment following line if you want to disable autosetting terminal title.
+    # DISABLE_AUTO_TITLE="true"
+
+    # Uncomment following line if you want red dots to be displayed while waiting for completion
+    # COMPLETION_WAITING_DOTS="true"
+
+    # Which plugins would you like to load? (plugins can be found in ~/.oh-my-zsh/plugins/*)
+    # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
+    # Example format: plugins=(rails git textmate ruby lighthouse)
+    # WARNING: Order matters, especially for zsh-syntax-highlighting and history-substring-search
+    plugins=(command-not-found zsh-completions zsh-completion-generator vi-mode git screen zsh-autosuggestions zsh-navigation-tools zsh-cmd-architect cd-gitroot zsh-syntax-highlighting history-substring-search)
+    # Enable autorrection features in Oh My Zsh, especially exception to autocorrection
+    # that are annoying
+    ENABLE_CORRECTION="true"
+
+    source $ZSH/oh-my-zsh.sh
+
+    # zsh-navigation-tool
+    znt_list_border=0
+    # 1 to select entry when Enter is pressed
+    znt_list_instant_select=1
+    # znt_list_colorpair="green/black"
+    # - underline or reverse - how should be active element highlighted
+    znt_history_active_text="reverse"
+
+    # zsh-autosuggestions plugin
+    ZSH_AUTOSUGGEST_STRATEGY="match_prev_cmd"
+    ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=blue"
+
+    #Git
+    #    typeset -ga preexec_functions
+    #    typeset -ga chpwd_functions
+    #
+    #    # Find git branch and updates env variable to be available in prompt
+    #    export GIT_CURRENT_BRANCH
+    #
+    #    parse_git_branch() {
+    #        git branch --no-color 2> /dev/null \
+    #        | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1) -- /'
+    #    }
+    #
+    #    chpwd_functions+='zsh_chpwd_update_git_vars'
+    #    zsh_chpwd_update_git_vars() {
+    #        export GIT_CURRENT_BRANCH="$(parse_git_branch)"
+    #    }
+    #
+    #    preexec_functions+='zsh_preexec_update_git_vars'
+    #    zsh_preexec_update_git_vars() {
+    #        # Update the current branch name if a git command has been run
+    #        case "$(history $HISTCMD)" in
+    #            *git*)
+    #               zsh_chpwd_update_git_vars
+    #               ;;
+    #        esac
+    #    }
+# Misc options
+    setopt interactive_comments
+    setopt path_dirs
+    setopt print_exit_value
+    setopt auto_continue
+    setopt c_bases
+    setopt csh_junkie_loops
+    setopt re_match_pcre
+    setopt short_loops
+    setopt list_types
+   
+    # Every command taking more than 3 seconds (user+system) will have a timing
+    # report printed like when using time
+    REPORTTIME=3 
+    TIMEFMT='%J %U user %S system %P cpu %*E total (RES:%Kk, MAX:%Mm, I:%I, O:%O, MAJOR:%F, MINOR:%R, WAIT:%w) '
+
+# Prompt
+    # Allows parameter expansion to take place in the prompt
+    # to be able to call commands
+    setopt prompt_subst
+    local -ah ps1
+    local -h host user dir time_ leading_color _leading_color vicmd_color viins_color
+
+    vicmd_color="$fg[cyan]"
+    viins_color="$fg[default]"
+
+    # Detect vim mode
+    function zle-line-init zle-keymap-select {
+        _leading_color="${${KEYMAP/vicmd/$vicmd_color}/(main|viins)/$viins_color}"
+        zle reset-prompt
+    }
+    zle -N zle-line-init
+    zle -N zle-keymap-select
+    leading_color='$_leading_color'
+
+    # Set up the components of the upper line
+    user="%n"
+    host="%m"
+    #dir="%d"
+    dir='${PWD/#$HOME/~}' # Full physical path, with only $HOME given as ~
+    time_="%T"
+    # Assemble the new prompt
+    ps1=(
+        "%{$fg[white]$bg[black]%} $time_ $bg[default]"
+        "%{$fg[green]%} [$user@$host]"
+        "%{$fg[white]%} $vim_mode"
+        "%{$fg[blue] $terminfo[bold]%} $dir"
+        "%{$fg[default]$bg[default]%}"
+        $'\n'
+        "%{$leading_color%}"
+        '>>> '
+        "%{$bg[default]%}"
+    )
+
+    PS1="${(j::)ps1}"
+    # PS1+='$GIT_CURRENT_BRANCH'
+
+# Editors
+    READNULLCMD=${PAGER:-/usr/bin/less}
+    export VISUAL=vim
+    export EDITOR="$VISUAL"
+
+# History
+    export HISTFILE=~/.zsh_history
+    export HISTSIZE=10000
+    export SAVEHIST=$HISTSIZE
+    unsetopt share_history # Do not share history between instances. Can use "fc -W" and "fc -R" to do it
+    setopt hist_ignore_all_dups # No duplicates in hitory
+    setopt hist_ignore_space # Do not add commands with leading whitespace to history
+    setopt hist_no_store # Do not store calls to "history" command in history
+    # FIXME: hist_reduce_blanks probably corrupts history
+    # setopt hist_reduce_blanks # Remove superfluous blanks in command before adding to history
+    setopt hist_verify # Display the command before executing it when using "!"
+    setopt append_history
+
+# cd
+    setopt auto_pushd  # "cd +" completion with tab and directory history stack
+    setopt pushd_ignore_dups # No duplicate in directory stack
+    setopt cdable_vars # Allow "cd myvar" if myvar is a variable which value starts with "/"
+
+# Completion
+    # Cygwin fix :
+    # If you don't want compinit called here, place the line
+    # skip_global_compinit=1
+    # in your $ZDOTDIR/.zshenv or $ZDOTDIR/.zprofice
+
+    if [ -z "$skip_global_compinit" ]; then
+        autoload -U compinit
+        compinit -C
+    fi
+    zmodload zsh/complist
+
+    setopt extended_glob
+    setopt glob_star_short # Allow **.c instead of **/*.c
+    setopt magic_equal_subst # Do globbing on unquoted command parameters like "param=value"
+    setopt numeric_glob_sort
+    setopt mark_dirs
+    setopt rc_expand_param
+    # Autocorrect commands
+    # Exceptions added by Oh My Zsh (option ENABLE_CORRECTION)
+    setopt correct_all
+
+    # Ignore completion functions for commands you don’t have
+    zstyle ':completion:*:functions' ignored-patterns '_*'
+
+    zstyle ':completion:*:descriptions' format '%U%B%d%b%u'
+    zstyle ':completion:*:processes-names' command 'ps -e -o comm='
+    zstyle ':completion:*:warnings' format '%BSorry, no matches for: %d%b'
+    # Build completion cache, useful for completions that requires lot of
+    # computations such as the package list
+    zstyle ':completion:*' use-cache on
+    zstyle ':completion:*' cache-path ~/.zsh_cache
+    # Colors for process list
+    zstyle ':completion:*:*:kill:*:processes' list-colors "=(#b) #([0-9]#)*=36=31"
+
+# Alias and Environment configuration
+    # Global aliases
+    alias -g '¶'='| grep -v'
+    alias -g 'ß'='| grep'
+    alias -g ':gitrepos'='**/*(+isgitrepo)'
+
+
+    # Disable correction for some commands
+    alias mkdir='nocorrect mkdir'
+    alias cp='nocorrect cp'
+    alias mv='nocorrect mv'
+
+    alias ls='ls --color=auto'
+    alias ll='ls --color=auto -lh'
+    alias la='ls --color=auto -lah'
+    alias lll='ls --color=auto -lh | less'
+
+    # Resolve the physical path, resolving all the symbolic links
+    alias cdd="cd -P"
+    # cd-gitroot plugin
+    alias gcd='cd-gitroot'
+
+    #alias mplayer='mplayer -vo fbdev -zoom -x 800 -y 600' #pour avoir le framebuffer actif en console
+    alias cv='cp -Rva'
+
+    export GREP_COLOR=31
+    alias grep='grep --color=auto --exclude-dir=.cvs --exclude-dir=.git --exclude-dir=.hg --exclude-dir=.svn'
+    alias lf="grep -IR --exclude='*.dump' --exclude='*.map' -n"
+
+    # Import history from all other running shells immediatly
+    alias hist-sync='fc -IR'
+
+    # Less configuration
+    LESS="-SRXI"
+
+# Functions
+    
+    # Can be used to expand only git repository:
+    # ls **(+isgitrepo)
+    function isgitrepo() {
+        # Uses $REPLY to be usable with +cmd or eString glob qualifier
+        test -d $REPLY/.git
+
+        # Hide all output to avoid spurious exit value displayed if
+        # PRINT_EXIT_VALUE option is enabled
+    }   &> /dev/null
+
+    # Display directory content after cd
+    function cd(){
+        builtin cd "$@" &&
+        ls
+    }
+
+    # A zle widget to go to parent or previous directory in history
+    # It can be mapped to a shortcut with binkey
+    function cd_parent() {
+        pushd .. > /dev/null
+        zle reset-prompt
+        echo
+        ls
+        echo
+    }
+    zle -N cd_parent
+
+    function cd_undo() {
+        popd > /dev/null
+        zle reset-prompt
+        echo
+        ls
+        echo
+    }
+    zle -N cd_undo
+
+    # Expand everything, including alias
+    globalias() {
+       zle _expand_alias
+       zle expand-word
+    }
+    zle -N globalias
+
+    # Directories bookmark
+    # Integrated with ZSH named directories (~name expanded by the named directory "name")
+    # Also integrated with the CDPATH to allow "cd name" instead of the longer "cd ~name"
+
+    # Colon separated list of path of bookmarks environments (directories with symlinks bookmarks)
+    BOOKMARKS_ENVS="$HOME/.bookmarks"
+
+    # Find the bookmark and jump to it
+    function bm(){
+        local bm_name="$1"
+        local -a bmdir_array
+        bmdir_array=(${(s.:.)BOOKMARKS_ENVS})
+
+        for dir in $bmdir_array; do
+            cd -P "$dir/$bm_name" >/dev/null 2>&1 && break
+        done
+    }
+
+    # Empty the Zsh named directory hash and add the bookmarks to it
+    # Also update CDPATH environment variable
+    function bm-rehash() {
+        local -a bmdir_array
+        bmdir_array=(${(s.:.)BOOKMARKS_ENVS})
+        export CDPATH="$BOOKMARKS_ENVS"
+
+        # clean the named directory hash
+        hash -rd
+
+        # add the bookmarks to it
+        for bmdir in $bmdir_array; do
+            for bm in "$bmdir/"*(@N); do
+                hash -d -- "${bm:t}=${bm:A}"
+            done;
+        done;
+    }
+
+    # Load the given bookmark environment
+    # It will start the search inside the initial environment (last element of BOOKMARKS_ENVS)
+    # If no subdirectory is found, assumes it was a path and add the argument directly
+    function bm-loadenv() {
+        local -a bmdir_array
+        bmdir_array=(${(s.:.)BOOKMARKS_ENVS})
+        local bm_subdir="$1"
+
+        if [[ "$bm_subdir" != '.' && "$bm_subdir" != '..'  && "$bm_subdir" != './' && "$bm_subdir" != '../' ]]; then
+            for dir in $bmdir_array; do
+                if [ -d "$dir/$bm_subdir" ]; then
+                    local mbenv_path="$(readlink -f "$dir/$bm_subdir")"
+
+                    if [ "$mbenv_path" != "${bmdir_array[1]}" ]; then
+                        BOOKMARKS_ENVS="$mbenv_path:$BOOKMARKS_ENVS"
+                        # reload the Zsh named directory hash
+                        bm-rehash
+                    fi
+                    return
+                fi
+            done
+        fi
+
+        if [ -d "$bm_subdir" ]; then
+            local mbenv_path="$(readlink -f "$bm_subdir")"
+
+            if [ "$mbenv_path" != "${bmdir_array[1]}" ]; then
+                BOOKMARKS_ENVS="$mbenv_path:$BOOKMARKS_ENVS"
+                # reload the Zsh named directory hash
+                bm-rehash
+            fi
+            return
+        else
+            echo "Invalid bookmark environment subdirectory or no such directory: $bm_subdir" 1>&2
+        fi
+    }
+
+    # Unload the given environment, or the last loaded one if no argument is given
+    function bm-unloadenv() {
+        local bmenv_name="$1"
+        local -a bmdir_array
+        bmdir_array=(${(s.:.)BOOKMARKS_ENVS})
+
+        if [ "${#bmdir_array}" -le 1 ]; then
+            return
+        fi;
+
+        if [ -z "$bmenv_name" ]; then
+            bmenv_name="${bmdir_array[1]:t}"
+        fi
+
+        for dir in $bmdir_array; do
+            if [ "${dir:t}" = "$bmenv_name" ]; then
+                bmdir_array[$bmdir_array[(i)$dir]]=()
+                BOOKMARKS_ENVS="${(j.:.)bmdir_array}"
+                break
+            fi;
+        done
+
+        # reload the Zsh named directory hash
+        bm-rehash
+    }
+
+    # Add a bookmark to the last loaded environment
+    function bm-add() {
+        local newbm_dir="$(pwd)"
+        local newbm_name="$1"
+        local -a bmdir_array
+        bmdir_array=(${(s.:.)BOOKMARKS_ENVS})
+        local bmdir_name="${bmdir_array[1]}"
+
+        if [ -z "$newbm_name" ]; then
+            echo "You must give a name to this bookmark" 1>&2
+            return
+        fi
+
+        if [ -d "$bmdir_name" ] ; then
+            if [ ! -e "$bmdir_name/$newbm_name" ] ; then
+                ln -s "$newbm_dir" "$bmdir_name/$newbm_name"
+            else
+                echo "Bookmark already existing in last loaded bookmark environment: $newbm_name" 1>&2
+                return
+            fi
+        else
+            echo "Invalid bookmark directory: no such directory $bmdir_name" 1>&2
+            return
+        fi
+
+        # reload the Zsh named directory hash
+        bm-rehash
+    }
+
+    # Add a bookmark environment in the initial environment (last element of BOOKMARKS_ENVS)
+    function bm-addenv() {
+        local newbmenv_name="$1"
+        local -a bmdir_array
+        bmdir_array=(${(s.:.)BOOKMARKS_ENVS})
+        local bmdir_name="${bmdir_array[-1]}"
+
+        if [ -z "$newbmenv_name" ]; then
+            echo "You must give a name to this bookmark environment" 1>&2
+            return
+        fi
+
+        if [ -d "$bmdir_name" ]; then
+            mkdir "$bmdir_name/$newbmenv_name"
+        else
+            echo "Invalid bookmark directory: no such directory $bmdir_name" 1>&2
+            return
+        fi
+
+        bm-loadenv "$newbmenv_name"
+    }
+
+    # Remove a bookmark environment from the initial environment (last element of BOOKMARKS_ENVS)
+    function bm-rmenv() {
+        local bmenv_name="$1"
+        local -a bmdir_array
+        bmdir_array=(${(s.:.)BOOKMARKS_ENVS})
+        local bmdir_name="${bmdir_array[-1]}"
+
+        if [ -z "$bmenv_name" ]; then
+            echo "You must give the name of the bookmark environment you want to delete" 1>&2
+            return
+        fi
+
+        if [ -d "$bmdir_name" ]; then
+            rmdir "$bmdir_name/$bmenv_name"
+        else
+            echo "Invalid bookmark directory: no such directory $bmdir_name" 1>&2
+            return
+        fi
+
+        # reload the Zsh named directory hash
+        bm-rehash
+    }
+
+    # Remove a given bookmark from the last-loaded bookmark environment (first element of BOOKMARKS_ENVS)
+    function bm-rm() {
+        local rmbm_name="$1"
+        local -a bmdir_array
+        bmdir_array=(${(s.:.)BOOKMARKS_ENVS})
+        local bmdir_name="${bmdir_array[1]}"
+
+        if [ -z "$rmbm_name" ]; then
+            echo "You must give the name of the bookmark you want to delete" 1>&2
+            return
+        fi
+
+        if [ -L "$bmdir_name/$rmbm_name" ]; then
+            rm "$bmdir_name/$rmbm_name"
+        else
+            echo "Invalid bookmark name in last loaded bookmark environment: $rmbm_name" 1>&2
+            return
+        fi
+
+        # reload the Zsh named directory hash
+        bm-rehash
+    }
+
+    # List the available bookmarks
+    function bm-list() {
+        local -a bmdir_array
+        bmdir_array=(${(s.:.)BOOKMARKS_ENVS})
+
+        for bmdir in $bmdir_array; do
+            if [ "${bmdir}" != "${bmdir_array[-1]}" ]; then
+                echo "#${bmdir:t}"
+            else
+                echo "#default"
+            fi
+            for bm in "$bmdir/"*(@N); do
+                echo "${bm:t}=${bm:A}"
+            done;
+            echo
+        done;
+    }
+
+    # List the available bookmarks environments
+    function bm-listenv() {
+        local -a bmdir_array
+        bmdir_array=(${(s.:.)BOOKMARKS_ENVS})
+        for bmdir in $bmdir_array; do
+            if [ "${bmdir}" != "${bmdir_array[-1]}" ]; then
+                echo "${bmdir:t}"
+            fi
+            for bmenv_name in "$bmdir"/*(/N); do
+                if [ -z "${bmdir_array[(r)$bmenv_name]}" ]; then
+                    echo "#${bmenv_name:t}"
+                fi
+            done
+        done
+    }
+
+# Function execution
+    # Load the bookmarks into the Zsh named directory hash
+    bm-rehash
+
+# Shortcuts and keybindings
+    # Vim bindings
+    # bindkey -v # Uncommenting reset bindings installed by zsh plugins if they were bind with the emacs map as main map
+
+    # Vim-like binding
+    bindkey -M vicmd 'v' edit-command-line # start EDITOR to edit command line
+    bindkey -M viins 'kj' vi-cmd-mode # Map kj to <Esc>
+
+    bindkey '^w' backward-kill-word
+    bindkey '^[[Z' reverse-menu-complete
+    bindkey "^h" run-help
+    bindkey "^u" undo
+    bindkey "^e" globalias # Expand everything in the selected shell word
+    
+    autoload -U incarg
+    zle -N incarg
+    bindkey '^a' incarg # Increment the selected number by one
+
+    # Ctrl+Right/Left move from words to words
+    bindkey "^[[1;5C" forward-word
+    bindkey "^[[1;5D" backward-word
+
+    # Backward search
+    bindkey "^[[A" history-substring-search-up
+    bindkey -M vicmd 'k' history-substring-search-up
+
+    bindkey "^[[B" history-substring-search-down
+    bindkey -M vicmd 'j' history-substring-search-down
+
+    # Alt+up and Alt+left bound to behave like in most file explorers
+    bindkey '^[[1;3A' cd_parent
+    bindkey '^[[1;3D' cd_undo
+
+
+# Freeze the TTY settings to avoid corruption by badly behaved programs
+ttyctl -f
