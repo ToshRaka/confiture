@@ -41,7 +41,12 @@ set tw=500
 set laststatus=2
 set nu
 
+" More natural splits
+set splitbelow
+set splitright
 
+" TAB to switch splits
+map <Tab> <C-W>w
 
 " Delete trailing white space on save, the Damien-special
 func! DeleteTrailingWS()
